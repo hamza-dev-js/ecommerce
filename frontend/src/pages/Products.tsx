@@ -226,7 +226,6 @@ const Products: React.FC<ProductsProps> = () => {
                       onClick={() => handleAddToCart(product)}
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 text-sm flex items-center space-x-1"
                     >
-                      <span>🛒</span>
                       <span>Add</span>
                     </button>
                   </div>

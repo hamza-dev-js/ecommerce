@@ -6,6 +6,7 @@ const app = express();
 
 // Import routes and middleware
 const productRoutes = require('./routes/products');
+const authRoutes = require('./routes/auth');
 const errorHandler = require('./middleware/errorHandler');
 
 // Middleware
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // API Routes
 app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -40,4 +42,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🛍️ Products API: http://localhost:${PORT}/api/products`);
+  console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
 });

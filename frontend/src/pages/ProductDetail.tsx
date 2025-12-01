@@ -192,7 +192,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
               >
-                {product.stock === 0 ? 'Out of Stock' : '🛒 Add to Cart'}
+                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
               </button>
               
               <button 
