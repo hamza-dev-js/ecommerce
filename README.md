@@ -5,16 +5,16 @@ A modern full-stack e-commerce application built with React.js frontend and Node
 ## Screenshots
 
 ### Products page
-![Products](screenshots/home.png)
+![Products](https://raw.githubusercontent.com/hamza-dev-js/ecommerce/refs/heads/main/screenshoots/products.PNG)
 
 ### Product page
-![Product](screenshots/product.png)
+![Product](https://raw.githubusercontent.com/hamza-dev-js/ecommerce/refs/heads/main/screenshoots/product.PNG)
 
 ### Cart
-![Cart](screenshots/cart.png)
+![Cart](https://raw.githubusercontent.com/hamza-dev-js/ecommerce/refs/heads/main/screenshoots/cart.PNG)
 
 ### Admin
-![Admin](screenshots/admin.png)
+![Admin](https://raw.githubusercontent.com/hamza-dev-js/ecommerce/refs/heads/main/screenshoots/admin.PNG)
 
 
 ## 🌟 Features
