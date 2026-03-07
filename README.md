@@ -2,6 +2,21 @@
 
 A modern full-stack e-commerce application built with React.js frontend and Node.js backend.
 
+## Screenshots
+
+### Products page
+![Products](screenshots/home.png)
+
+### Product page
+![Product](screenshots/product.png)
+
+### Cart
+![Cart](screenshots/cart.png)
+
+### Admin
+![Admin](screenshots/admin.png)
+
+
 ## 🌟 Features
 
 ### Frontend
