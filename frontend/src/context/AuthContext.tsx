@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 interface User {
   id: number;
@@ -26,29 +27,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Fetch user data
-      axios.get('http://localhost:5000/api/auth/me')
-        .then(response => {
-          setUser(response.data.user);
-        })
+      axios.get(`${API_URL}/api/auth/me`)
+        .then(response => setUser(response.data.user))
         .catch(() => {
           localStorage.removeItem('token');
           delete axios.defaults.headers.common['Authorization'];
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
-      email,
-      password
-    });
-    
+    const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
     const { token, user } = response.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -56,12 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (username: string, email: string, password: string) => {
-    const response = await axios.post('http://localhost:5000/api/auth/register', {
-      username,
-      email,
-      password
-    });
-    
+    const response = await axios.post(`${API_URL}/api/auth/register`, { username, email, password });
     const { token, user } = response.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -83,8 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

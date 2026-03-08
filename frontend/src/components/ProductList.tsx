@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Product } from '../types';
+import { API_URL } from '../config';
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -17,7 +18,7 @@ const ProductList: React.FC = () => {
    */
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/products');
+      const response = await axios.get(`${API_URL}/api/products`);
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -33,7 +34,7 @@ const ProductList: React.FC = () => {
   const handleDelete = async (productId: number) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/${productId}`);
+        await axios.delete(`${API_URL}/api/products/${productId}`);
         setProducts(products.filter(p => p.id !== productId));
         alert('Product deleted successfully!');
       } catch (error) {
@@ -52,7 +53,7 @@ const ProductList: React.FC = () => {
     if (!editingProduct) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/products/${editingProduct.id}`, editingProduct);
+      await axios.put(`${API_URL}/api/products/${editingProduct.id}`, editingProduct);
       await fetchProducts(); // Refresh the product list
       setEditingProduct(null);
       alert('Product updated successfully!');

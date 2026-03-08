@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import ProductImage from '../components/ProductImage';
 import { ProductsProps, Product } from '../types';
+import { API_URL } from '../config';
 
 /**
  * Products Page Component
@@ -23,7 +24,7 @@ const Products: React.FC<ProductsProps> = () => {
   useEffect(() => {
     const fetchProducts = async (): Promise<void> => {
       try {
-        const response = await axios.get('http://localhost:5000/api/products');
+        const response = await axios.get(`${API_URL}/api/products`);
         setProducts(response.data);
         setFilteredProducts(response.data);
         setLoading(false);

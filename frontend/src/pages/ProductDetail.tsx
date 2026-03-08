@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { ProductDetailProps, Product } from '../types';
+import { API_URL } from '../config';
 
 /**
  * Product Detail Page Component
@@ -22,7 +23,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   useEffect(() => {
     const fetchProduct = async (): Promise<void> => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const response = await axios.get(`${API_URL}/api/products/${id}`);
         setProduct(response.data);
         setLoading(false);
       } catch (error) {
