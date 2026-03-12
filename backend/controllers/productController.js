@@ -11,271 +11,261 @@ const formatProduct = (product) => {
   };
 };
 
+
 /**
- * Get all products from database
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Get all products
  */
-const getAllProducts = (req, res) => {
-  const sql = 'SELECT * FROM products ORDER BY id DESC';
-  
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error('❌ Error fetching products:', err.message);
-      return res.status(500).json({ 
-        message: 'Error fetching products from database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    }
-    
-    // Convert prices and stock to numbers
-    const formattedProducts = results.map(formatProduct);
-    
-    console.log(`✅ Retrieved ${formattedProducts.length} products successfully`);
+const getAllProducts = async (req, res) => {
+
+  try {
+
+    const sql = 'SELECT * FROM products ORDER BY id DESC';
+
+    const result = await db.query(sql);
+
+    const formattedProducts = result.rows.map(formatProduct);
+
     res.json(formattedProducts);
-  });
+
+  } catch (err) {
+
+    console.error('Error fetching products:', err);
+    res.status(500).json({ message: 'Error fetching products' });
+
+  }
+
 };
 
-/**
- * Get single product by ID
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const getProductById = (req, res) => {
-  const productId = req.params.id;
-  const sql = 'SELECT * FROM products WHERE id = ?';
-  
-  // Validate product ID
-  if (isNaN(productId)) {
-    return res.status(400).json({ 
-      message: 'Invalid product ID format' 
-    });
-  }
-  
-  db.query(sql, [productId], (err, results) => {
-    if (err) {
-      console.error(`❌ Error fetching product ${productId}:`, err.message);
-      return res.status(500).json({ 
-        message: 'Error fetching product from database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    }
-    
-    if (results.length === 0) {
-      return res.status(404).json({ 
-        message: 'Product not found',
-        productId: productId
-      });
-    }
-    
-    // Convert data to correct types
-    const formattedProduct = formatProduct(results[0]);
-    
-    console.log(`✅ Retrieved product ${productId} successfully`);
-    res.json(formattedProduct);
-  });
-};
 
 /**
- * Create a new product
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Get product by ID
  */
-const createProduct = (req, res) => {
-  const { name, description, price, image, category, stock } = req.body;
-  
-  // Validate required fields
-  if (!name || !description || !price || !image || !category || stock === undefined) {
-    return res.status(400).json({ 
-      message: 'All fields are required: name, description, price, image, category, stock'
-    });
-  }
-  
-  // Validate price and stock are numbers
-  if (isNaN(price) || isNaN(stock)) {
-    return res.status(400).json({ 
-      message: 'Price and stock must be valid numbers'
-    });
-  }
-  
-  // Convert to numbers to ensure correctness
-  const priceNum = Number(price);
-  const stockNum = Number(stock);
-  
-  const sql = 'INSERT INTO products (name, description, price, image, category, stock) VALUES (?, ?, ?, ?, ?, ?)';
-  
-  db.query(sql, [name, description, priceNum, image, category, stockNum], (err, results) => {
-    if (err) {
-      console.error('❌ Error creating product:', err.message);
-      return res.status(500).json({ 
-        message: 'Error creating product in database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
+const getProductById = async (req, res) => {
+
+  try {
+
+    const productId = req.params.id;
+
+    if (isNaN(productId)) {
+      return res.status(400).json({ message: 'Invalid product ID' });
     }
-    
-    console.log(`✅ Product created successfully with ID: ${results.insertId}`);
-    res.status(201).json({ 
-      id: results.insertId, 
-      name, 
-      description, 
-      price: priceNum, 
-      image, 
-      category, 
-      stock: stockNum,
-      message: 'Product created successfully'
-    });
-  });
+
+    const sql = 'SELECT * FROM products WHERE id = $1';
+
+    const result = await db.query(sql, [productId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const product = formatProduct(result.rows[0]);
+
+    res.json(product);
+
+  } catch (err) {
+
+    console.error('Error fetching product:', err);
+    res.status(500).json({ message: 'Error fetching product' });
+
+  }
+
 };
 
-/**
- * Update an existing product
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const updateProduct = (req, res) => {
-  const productId = req.params.id;
-  const { name, description, price, image, category, stock } = req.body;
-  
-  // Validate product ID
-  if (isNaN(productId)) {
-    return res.status(400).json({ 
-      message: 'Invalid product ID format' 
-    });
-  }
-  
-  // Validate required fields
-  if (!name || !description || !price || !image || !category || stock === undefined) {
-    return res.status(400).json({ 
-      message: 'All fields are required: name, description, price, image, category, stock'
-    });
-  }
-  
-  // Convert to numbers to ensure correctness
-  const priceNum = Number(price);
-  const stockNum = Number(stock);
-  
-  const sql = 'UPDATE products SET name = ?, description = ?, price = ?, image = ?, category = ?, stock = ? WHERE id = ?';
-  
-  db.query(sql, [name, description, priceNum, image, category, stockNum, productId], (err, results) => {
-    if (err) {
-      console.error(`❌ Error updating product ${productId}:`, err.message);
-      return res.status(500).json({ 
-        message: 'Error updating product in database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    }
-    
-    if (results.affectedRows === 0) {
-      return res.status(404).json({ 
-        message: 'Product not found',
-        productId: productId
-      });
-    }
-    
-    console.log(`✅ Product ${productId} updated successfully`);
-    res.json({ 
-      message: 'Product updated successfully',
-      productId: productId,
-      affectedRows: results.affectedRows
-    });
-  });
-};
 
 /**
- * Delete a product by ID
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Create product
  */
-const deleteProduct = (req, res) => {
-  const productId = req.params.id;
-  
-  // Validate product ID
-  if (isNaN(productId)) {
-    return res.status(400).json({ 
-      message: 'Invalid product ID format' 
+const createProduct = async (req, res) => {
+
+  try {
+
+    const { name, description, price, image, category, stock } = req.body;
+
+    if (!name || !description || !price || !image || !category || stock === undefined) {
+      return res.status(400).json({
+        message: 'All fields required'
+      });
+    }
+
+    const sql = `
+      INSERT INTO products
+      (name, description, price, image, category, stock)
+      VALUES ($1,$2,$3,$4,$5,$6)
+      RETURNING id
+    `;
+
+    const result = await db.query(sql, [
+      name,
+      description,
+      price,
+      image,
+      category,
+      stock
+    ]);
+
+    const id = result.rows[0].id;
+
+    res.status(201).json({
+      id,
+      name,
+      description,
+      price,
+      image,
+      category,
+      stock,
+      message: 'Product created'
     });
+
+  } catch (err) {
+
+    console.error('Error creating product:', err);
+    res.status(500).json({ message: 'Error creating product' });
+
   }
-  
-  const sql = 'DELETE FROM products WHERE id = ?';
-  
-  db.query(sql, [productId], (err, results) => {
-    if (err) {
-      console.error(`❌ Error deleting product ${productId}:`, err.message);
-      return res.status(500).json({ 
-        message: 'Error deleting product from database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    }
-    
-    if (results.affectedRows === 0) {
-      return res.status(404).json({ 
-        message: 'Product not found',
-        productId: productId
-      });
-    }
-    
-    console.log(`✅ Product ${productId} deleted successfully`);
-    res.json({ 
-      message: 'Product deleted successfully',
-      productId: productId,
-      affectedRows: results.affectedRows
-    });
-  });
+
 };
 
+
 /**
- * Search products by name or description
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Update product
  */
-const searchProducts = (req, res) => {
-  const searchQuery = `%${req.params.query}%`;
-  const sql = 'SELECT * FROM products WHERE name LIKE ? OR description LIKE ? ORDER BY name';
-  
-  db.query(sql, [searchQuery, searchQuery], (err, results) => {
-    if (err) {
-      console.error('❌ Error searching products:', err.message);
-      return res.status(500).json({ 
-        message: 'Error searching products in database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
+const updateProduct = async (req, res) => {
+
+  try {
+
+    const productId = req.params.id;
+
+    const { name, description, price, image, category, stock } = req.body;
+
+    const sql = `
+      UPDATE products
+      SET name=$1, description=$2, price=$3, image=$4, category=$5, stock=$6
+      WHERE id=$7
+    `;
+
+    const result = await db.query(sql, [
+      name,
+      description,
+      price,
+      image,
+      category,
+      stock,
+      productId
+    ]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Product not found' });
     }
-    
-    // Convert prices and stock to numbers
-    const formattedProducts = results.map(formatProduct);
-    
-    console.log(`✅ Found ${formattedProducts.length} products matching: ${req.params.query}`);
+
+    res.json({
+      message: 'Product updated',
+      productId
+    });
+
+  } catch (err) {
+
+    console.error('Error updating product:', err);
+    res.status(500).json({ message: 'Error updating product' });
+
+  }
+
+};
+
+
+/**
+ * Delete product
+ */
+const deleteProduct = async (req, res) => {
+
+  try {
+
+    const productId = req.params.id;
+
+    const sql = 'DELETE FROM products WHERE id = $1';
+
+    const result = await db.query(sql, [productId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json({
+      message: 'Product deleted',
+      productId
+    });
+
+  } catch (err) {
+
+    console.error('Error deleting product:', err);
+    res.status(500).json({ message: 'Error deleting product' });
+
+  }
+
+};
+
+
+/**
+ * Search products
+ */
+const searchProducts = async (req, res) => {
+
+  try {
+
+    const query = `%${req.params.query}%`;
+
+    const sql = `
+      SELECT * FROM products
+      WHERE name ILIKE $1 OR description ILIKE $1
+      ORDER BY name
+    `;
+
+    const result = await db.query(sql, [query]);
+
+    const formattedProducts = result.rows.map(formatProduct);
+
     res.json(formattedProducts);
-  });
+
+  } catch (err) {
+
+    console.error('Error searching products:', err);
+    res.status(500).json({ message: 'Error searching products' });
+
+  }
+
 };
+
 
 /**
- * Get products by category
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Products by category
  */
-const getProductsByCategory = (req, res) => {
-  const category = req.params.category;
-  const sql = 'SELECT * FROM products WHERE category = ? ORDER BY name';
-  
-  db.query(sql, [category], (err, results) => {
-    if (err) {
-      console.error(`❌ Error fetching products for category ${category}:`, err.message);
-      return res.status(500).json({ 
-        message: 'Error fetching products by category from database',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    }
-    
-    // Convert prices and stock to numbers
-    const formattedProducts = results.map(formatProduct);
-    
-    console.log(`✅ Retrieved ${formattedProducts.length} products in category: ${category}`);
+const getProductsByCategory = async (req, res) => {
+
+  try {
+
+    const category = req.params.category;
+
+    const sql = `
+      SELECT * FROM products
+      WHERE category = $1
+      ORDER BY name
+    `;
+
+    const result = await db.query(sql, [category]);
+
+    const formattedProducts = result.rows.map(formatProduct);
+
     res.json(formattedProducts);
-  });
+
+  } catch (err) {
+
+    console.error('Error fetching products by category:', err);
+    res.status(500).json({ message: 'Error fetching category products' });
+
+  }
+
 };
 
-// Export all controller functions
+
 module.exports = {
   getAllProducts,
   getProductById,

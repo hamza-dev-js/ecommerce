@@ -1,30 +1,30 @@
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 
 /**
- * MySQL database connection configuration
- * Uses environment variables for security
+ * PostgreSQL connection (Supabase)
  */
-const db = mysql.createConnection({
-  host: process.env.DB_HOST  ,
-  user: process.env.DB_USER  ,
-  password: process.env.DB_PASSWORD ,
-  database: process.env.DB_NAME ,
-  charset: 'utf8mb4'
+const db = new Pool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 5432,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 /**
- * Connect to MySQL database
- * Handles connection errors and success
+ * Test database connection
  */
-db.connect((err) => {
+db.connect((err, client, release) => {
   if (err) {
-    console.error('❌ Error connecting to MySQL database:', err.message);
-    console.log('💡 Please check your database configuration and ensure MySQL is running');
+    console.error('❌ Error connecting to PostgreSQL database:', err.message);
     return;
   }
-  console.log('✅ Connected to MySQL database successfully');
-  console.log(`📊 Database: ${process.env.DB_NAME || 'ecommerce'}`);
+
+  console.log('✅ Connected to Supabase PostgreSQL successfully');
+  release();
 });
 
-// Export database connection for use in other files
 module.exports = db;
