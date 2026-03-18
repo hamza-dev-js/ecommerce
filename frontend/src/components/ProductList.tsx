@@ -222,6 +222,7 @@ const ProductList: React.FC = () => {
 
       {/* Products Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -306,6 +307,7 @@ const ProductList: React.FC = () => {
             ))}
           </tbody>
         </table>
+      </div>
 
         {/* Empty State */}
         {products.length === 0 && (
